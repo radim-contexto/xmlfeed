@@ -1,0 +1,36 @@
+name: Build feed chunks
+
+on:
+  push:
+    paths:
+      - "universal.xml"
+      - "scripts/**"
+      - ".github/workflows/build-feed.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prepare output dir
+        run: mkdir -p data/chunks
+
+      - name: Slice XML into JSON chunks
+        run: python scripts/build_feed_chunks.py
+
+      - name: Commit & push chunk files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "build: update feed chunks"
+          file_pattern: data/**
